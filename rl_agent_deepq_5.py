@@ -26,7 +26,7 @@ EPSILON_DECAY = 1000
 NUM_EPISODES = 100000
 BATCH_SIZE = 64
 TARGET_UPDATE_FREQUENCY = 100
-REPLAY_BUFFER_SIZE = 100000
+REPLAY_BUFFER_SIZE = NUM_EPISODES
 # --- RL Agent Parameters ---
 
 # Define the state space based on your GameStateData (including resources now)
@@ -83,7 +83,8 @@ ACTION_SPACE = [
     {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "switch_camera_state_ability", "camera_state": 26},
 
     # Example for Ctrl + Change Ability Index
-    # {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": True, "action": "change_ability_index", "camera_state": 13},
+    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "change_ability_index", "camera_state": 13},
+    #{"type": "Control", "input_value": 1.0, "alt": False, "ctrl": True, "action": "change_ability_index", "camera_state": 13},
 
     # Example for No Modifier + Move Camera +/- x,y
     {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "move_camera", "camera_state": 1},
@@ -100,14 +101,17 @@ ACTION_SPACE = [
     # Example set workers to Resource
     {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "resource_management", "camera_state": 1},
     {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "resource_management", "camera_state": 2},
-
+    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "resource_management", "camera_state": 3},
+    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "resource_management", "camera_state": 4},
+    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "resource_management", "camera_state": 5},
+    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "resource_management", "camera_state": 6},
 
     # Example for No Modifier + Left Click
-    #{"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "left_click", "camera_state": 1}, # Using a camera state to trigger
+    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "left_click", "camera_state": 1}, # Using a camera state to trigger
     #{"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "left_click", "camera_state": 2}, # Using a different camera state to trigger
 
     # Example for No Modifier + Right Click
-    #{"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "right_click", "camera_state": 1}, # Reusing a camera state for example
+    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "right_click", "camera_state": 1}, # Reusing a camera state for example
     #{"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "right_click", "camera_state": 2}, # Reusing a camera state for example
 ]
 ACTION_SPACE_SIZE = len(ACTION_SPACE)
@@ -293,14 +297,15 @@ def extract_reward(previous_game_state, current_game_state, unreal_action_str):
 
         # Calculate rewards as the inverse of the distance
         # Adding a small constant to prevent division by zero
-        friendly_reward = 1.0 / (dist_to_friendly + 1e-6)
-        enemy_reward = 1.0 / (dist_to_enemy + 1e-6)
-
+        friendly_reward = 500 / (dist_to_friendly)
+        enemy_reward = 500 / (dist_to_enemy)
+        print(f"[friendly_reward] : {friendly_reward}")
+        print(f"[enemy_reward] : {enemy_reward}")
         # Optionally scale down the rewards if needed (example: multiply by 0.05)
         reward += 0.05 * friendly_reward
         reward += 0.05 * enemy_reward
 
-    reward -= 0.04 # Small negative reward for time passing
+    reward -= 0.03 # Small negative reward for time passing
     return reward
 
 def optimize_model():
