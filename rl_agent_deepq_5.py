@@ -1,3 +1,4 @@
+import sys
 import mmap
 import struct
 import time
@@ -9,8 +10,15 @@ import torch.optim as optim
 import random
 from collections import deque  # For the replay buffer
 
+if len(sys.argv) < 2:
+    print("Usage: python your_script.py <TeamId>")
+    sys.exit(1)
+
+# Read TeamId from command-line argument
+team_id = sys.argv[1]
+
 # Define shared memory name (same as Unreal)
-SHARED_MEMORY_NAME = "Global\\UnrealRLSharedMemory"
+SHARED_MEMORY_NAME = f"Global\\UnrealRLSharedMemory_TeamId_{team_id}"
 MEMORY_SIZE = 4098     # Should match Unreal's size
 
 # Structure format (must match Unreal's `SharedData`)
@@ -296,14 +304,27 @@ def extract_reward(previous_game_state, current_game_state, unreal_action_str):
         dist_to_enemy = euclidean_distance(agent_pos, enemy_pos)
 
         # Calculate rewards as the inverse of the distance
-        # Adding a small constant to prevent division by zero
-        friendly_reward = 500 / (dist_to_friendly)
-        enemy_reward = 500 / (dist_to_enemy)
+     
+        # Define a small constant to avoid division by zero
+        epsilon_distance = 1e-6
+
+        friendly_reward = 500 / (dist_to_friendly + epsilon_distance)
+        enemy_reward = 500 / (dist_to_enemy + epsilon_distance)
         print(f"[friendly_reward] : {friendly_reward}")
         print(f"[enemy_reward] : {enemy_reward}")
+
+        # Example: after 10 minutes (or a set number of episodes/steps), change multipliers
+        # Assuming you have a variable `total_steps` or `episode_number` to track time.
+        if total_steps >= 6000:  # Adjust this threshold based on your training speed
+            enemy_multiplier = 0.1    # Increase reward for enemy proximity
+            friendly_multiplier = 0.01  # Penalize being too close to friendly units
+        else:
+            enemy_multiplier = 0.05   # Default scaling factors
+            friendly_multiplier = 0.05
+
         # Optionally scale down the rewards if needed (example: multiply by 0.05)
-        reward += 0.05 * friendly_reward
-        reward += 0.05 * enemy_reward
+        reward += friendly_multiplier * friendly_reward
+        reward += enemy_multiplier * enemy_reward
 
     reward -= 0.03 # Small negative reward for time passing
     return reward
