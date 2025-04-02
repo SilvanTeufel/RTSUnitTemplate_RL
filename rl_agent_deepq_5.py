@@ -116,7 +116,7 @@ ACTION_SPACE = [
 
     # Example for No Modifier + Left Click
     {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "left_click", "camera_state": 1}, # Using a camera state to trigger
-    #{"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "left_click", "camera_state": 2}, # Using a different camera state to trigger
+    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "left_click", "camera_state": 2}, # Using a different camera state to trigger
 
     # Example for No Modifier + Right Click
     {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "right_click", "camera_state": 1}, # Reusing a camera state for example
@@ -303,16 +303,27 @@ def extract_reward(previous_game_state, current_game_state, unreal_action_str):
         dist_to_friendly = euclidean_distance(agent_pos, friendly_pos)
         dist_to_enemy = euclidean_distance(agent_pos, enemy_pos)
 
+        # Print positions
+        print(f"Agent Position: {agent_pos}")
+        print(f"Friendly Position: {friendly_pos}")
+        print(f"Enemy Position: {enemy_pos}")
+
+        # Print distances
+        print(f"Distance to Friendly: {dist_to_friendly}")
+        print(f"Distance to Enemy: {dist_to_enemy}")
         # Calculate rewards as the inverse of the distance
      
         # Define a small constant to avoid division by zero
         epsilon_distance = 1e-6
 
+        # Calculate rewards as the inverse of the distance
+        # Adding a small constant to prevent division by zero
         friendly_reward = 500 / (dist_to_friendly + epsilon_distance)
         enemy_reward = 500 / (dist_to_enemy + epsilon_distance)
+
         print(f"[friendly_reward] : {friendly_reward}")
         print(f"[enemy_reward] : {enemy_reward}")
-
+        
         # Example: after 10 minutes (or a set number of episodes/steps), change multipliers
         # Assuming you have a variable `total_steps` or `episode_number` to track time.
         if total_steps >= 6000:  # Adjust this threshold based on your training speed
@@ -392,7 +403,7 @@ if __name__ == "__main__":
         parsed_successfully = False
         if bNewGameStateAvailable and game_state_str:
             game_state_str = game_state_str.strip().replace('\x00', '')
-            # print(f"[RL Agent] Received Game State (length {len(game_state_str)}): {game_state_str}")
+            print(f"[RL Agent] Received Game State (length {len(game_state_str)}): {game_state_str}")
             try:
                 game_state_dict = json.loads(game_state_str)
                 parsed_successfully = True
