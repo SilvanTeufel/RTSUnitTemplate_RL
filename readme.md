@@ -1,4 +1,4 @@
-Of course\! Here is a comprehensive `README.md` file for the provided Python scripts. It explains the project's purpose, architecture, and provides clear instructions on how to set it up and run it.
+Of course\! Based on the file names shown in your image, here is the corrected `README.md`.
 
 -----
 
@@ -6,10 +6,11 @@ Of course\! Here is a comprehensive `README.md` file for the provided Python scr
 
 This project implements a Reinforcement Learning (RL) agent in Python using PyTorch. The agent is designed to interact with and learn to play a game running in Unreal Engine. Communication between the Python agent and the Unreal Engine game is achieved through shared memory.
 
-The repository contains two main scripts:
+The repository contains several key files:
 
-1.  **`train_agent.py`**: A script for training a Deep Q-Network (DQN) agent from scratch.
-2.  **`play_agent.py`**: A script for running inference with a pre-trained agent model.
+1.  **`rl_agent_deepq_5.py`**: A script for training a Deep Q-Network (DQN) agent from scratch.
+2.  **`play_game.py`**: A script for running inference with a pre-trained agent model.
+3.  **`weight_averageing.py`**: A utility for model weight manipulation, likely for creating an averaged model from several checkpoints.
 
 ## Features
 
@@ -36,8 +37,8 @@ The system operates in a continuous loop between the Unreal Engine game and the 
       * Continuously monitors the shared memory for the `bNewGameStateAvailable` flag.
       * When a new state is available, it reads and deserializes the `GameState` JSON.
       * Processes the state into a tensor suitable for the neural network.
-      * **During Training (`train_agent.py`)**: It calculates a reward based on the change from the previous state, stores the experience in a replay buffer, and trains the Q-network. It uses an epsilon-greedy policy to select the next action.
-      * **During Inference (`play_agent.py`)**: It feeds the state to the loaded, pre-trained network and greedily selects the action with the highest predicted Q-value.
+      * **During Training (`rl_agent_deepq_5.py`)**: It calculates a reward based on the change from the previous state, stores the experience in a replay buffer, and trains the Q-network. It uses an epsilon-greedy policy to select the next action.
+      * **During Inference (`play_game.py`)**: It feeds the state to the loaded, pre-trained network and greedily selects the action with the highest predicted Q-value.
       * Serializes the chosen action into a JSON string.
       * Writes the `Action` JSON back into the shared memory and sets the `bNewActionAvailable` flag to `True`.
 
@@ -75,30 +76,30 @@ To create or access a **global** shared memory object (`Global\\...`), both the 
 
 ### 1\. Training the Agent
 
-The `train_agent.py` script trains the model and saves its progress.
+The `rl_agent_deepq_5.py` script trains the model and saves its progress.
 
 1.  **Start Unreal Engine**: Launch your Unreal Engine project as an **administrator**. Start the game/simulation. The game should create the shared memory block and wait for a connection.
 
 2.  **Run the Training Script**: Open an **administrator** command prompt, navigate to the project directory, and run the script with a unique `TeamId`. The `TeamId` is used to create a unique shared memory name, allowing multiple agent-game instances to run simultaneously without interfering with each other.
 
     ```bash
-    python train_agent.py <TeamId>
+    python rl_agent_deepq_5.py <TeamId>
     ```
 
     **Example:**
 
     ```bash
     # For Team 1
-    python train_agent.py 1
+    python rl_agent_deepq_5.py 1
     ```
 
 3.  **Monitor Training**: The script will print its status, including the current episode, total steps, and rewards. It will periodically save the trained model weights to `trained_network.pth`.
 
 ### 2\. Playing with the Trained Agent
 
-The `play_agent.py` script loads the `trained_network.pth` file to play the game using the learned policy.
+The `play_game.py` script loads the `trained_network.pth` file to play the game using the learned policy.
 
-**Note**: The provided `play_agent.py` script uses a hardcoded shared memory name (`Global\UnrealRLSharedMemory`). If your training script and Unreal project use a `TeamId` (e.g., `Global\UnrealRLSharedMemory_TeamId_1`), you **must** modify the `SHARED_MEMORY_NAME` variable in `play_agent.py` to match it.
+**Note**: The provided `play_game.py` script may use a hardcoded shared memory name (e.g., `Global\UnrealRLSharedMemory`). If your training script and Unreal project use a `TeamId` (e.g., `Global\UnrealRLSharedMemory_TeamId_1`), you **must** modify the `SHARED_MEMORY_NAME` variable in `play_game.py` to match it.
 
 1.  **Ensure a Trained Model Exists**: Make sure you have a `trained_network.pth` file in the same directory.
 
@@ -107,7 +108,7 @@ The `play_agent.py` script loads the `trained_network.pth` file to play the game
 3.  **Run the Play Script**: Open an **administrator** command prompt and run the script.
 
     ```bash
-    python play_agent.py
+    python play_game.py
     ```
 
 4.  **Observe**: The agent will now play the game by selecting the best action it knows for every game state it receives, printing the action it sends to the console.
@@ -116,8 +117,11 @@ The `play_agent.py` script loads the `trained_network.pth` file to play the game
 
 ### File Descriptions
 
-  - **`train_agent.py`**: Contains the complete logic for a DQN agent, including the Q-network, target network, replay buffer, optimizer, and the main training loop. It handles both exploration (taking random actions) and exploitation (using the network's knowledge).
-  - **`play_agent.py`**: A lightweight script that loads a saved `.pth` model file and performs inference. It only uses the network for exploitation (always choosing the best action) and does not perform any training or exploration.
+  - **`rl_agent_deepq_5.py`**: Contains the complete logic for a DQN agent, including the Q-network, target network, replay buffer, optimizer, and the main training loop. It handles both exploration (taking random actions) and exploitation (using the network's knowledge).
+  - **`play_game.py`**: A lightweight script that loads a saved `.pth` model file and performs inference. It only uses the network for exploitation (always choosing the best action) and does not perform any training or exploration.
+  - **`trained_network.pth`**: The default output file for the trained model weights, saved by `rl_agent_deepq_5.py` and loaded by `play_game.py`.
+  - **`weight_averageing.py`**: A utility script, likely used for Stochastic Weight Averaging (SWA) or averaging weights from different training checkpoints to create a more robust final model.
+  - **`readme.md`**: This documentation file.
 
 ### Key Concepts
 
@@ -157,9 +161,9 @@ The agent's learning is guided by the reward function. This function is carefull
       - Small penalty for taking damage.
       - `-0.03` constant time penalty each step to encourage efficiency.
 
-### Configuration Parameters (`train_agent.py`)
+### Configuration Parameters (`rl_agent_deepq_5.py`)
 
-You can modify the agent's learning behavior by tweaking these parameters at the top of the `train_agent.py` script:
+You can modify the agent's learning behavior by tweaking these parameters at the top of the `rl_agent_deepq_5.py` script:
 
   - `LEARNING_RATE`: How much to adjust the network weights on each update.
   - `GAMMA`: Discount factor for future rewards. A value closer to 1 makes the agent more farsighted.
