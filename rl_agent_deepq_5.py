@@ -116,7 +116,7 @@ ACTION_SPACE = [
 
     # Example for No Modifier + Left Click
     {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "left_click", "camera_state": 1}, # Using a camera state to trigger
-    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "left_click", "camera_state": 2}, # Using a different camera state to trigger
+    {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "left_click", "camera_state": 2}, # Using a different camera state to trigger Attack
 
     # Example for No Modifier + Right Click
     {"type": "Control", "input_value": 1.0, "alt": False, "ctrl": False, "action": "right_click", "camera_state": 1}, # Reusing a camera state for example
@@ -323,7 +323,7 @@ def extract_reward(previous_game_state, current_game_state, unreal_action_str):
 
         print(f"[friendly_reward] : {friendly_reward}")
         print(f"[enemy_reward] : {enemy_reward}")
-        
+
         # Example: after 10 minutes (or a set number of episodes/steps), change multipliers
         # Assuming you have a variable `total_steps` or `episode_number` to track time.
         if total_steps >= 6000:  # Adjust this threshold based on your training speed
